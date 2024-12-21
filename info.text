@@ -1,0 +1,195 @@
+(.vdocker) sushil@sushil:~/DOCKER/app$ ls -la
+total 20
+drwxrwxr-x 2 sushil sushil 4096 Dec 22 00:04 .
+drwxrwxr-x 7 sushil sushil 4096 Dec 22 01:51 ..
+-rw-rw-r-- 1 sushil sushil  315 Dec 22 00:11 Dockerfile
+-rw-rw-r-- 1 sushil sushil  771 Dec 22 02:30 main.py
+-rw-rw-r-- 1 sushil sushil   47 Dec 22 02:32 requirements.txt
+(.vdocker) sushil@sushil:~/DOCKER/app$ 
+
+
+####################################
+cat main.py 
+
+from flask import Flask
+import socket
+from MySQLdb import connect
+
+ip = socket.gethostbyname(socket.gethostname())
+
+def get_routers():
+    db = connect(host='172.20.0.200', db='inventory')
+    c = db.cursor()
+    c.execute('SELECT * FROM routers')
+    return c.fetchall()
+
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    out = (
+        f"Welcome to Cisco Devnet.<br>"
+        f"IP address of the server is {ip}.<br><br>"
+        f"Welcome to the JamesBond world!<br>"
+        f"Here is a list of the routers in the inventory:<br>"
+    )
+    out += "List of routers in the inventory:<br>"
+    for r in get_routers():
+        out += f"-> Hostname: {r[0]}, IP: {r[1]}<br>"
+    return out
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=9000)
+
+###############################################
+cat Dockerfile 
+
+from python:3.12.3
+
+# Copy dependency file first for caching
+COPY requirements.txt /app/
+
+# Copy the rest of the application files
+COPY . /app
+# Set the working directory
+WORKDIR /app
+
+RUN pip3 install -r requirements.txt
+# Expose the application's port
+EXPOSE 9000
+
+# Run the application
+CMD ["python3", "main.py"]
+
+
+(.vdocker) sushil@sushil:~/DOCKER/lb$ ls -la
+total 16
+drwxrwxr-x 2 sushil sushil 4096 Dec 22 00:56 .
+drwxrwxr-x 7 sushil sushil 4096 Dec 22 01:51 ..
+-rw-rw-r-- 1 sushil sushil   98 Dec 22 01:48 Dockerfile
+-rw-rw-r-- 1 sushil sushil  423 Dec 22 02:44 nginx.conf
+(.vdocker) sushil@sushil:~/DOCKER/lb$
+
+####################
+cat Dockerfile 
+
+FROM nginx
+
+COPY nginx.conf /etc/nginx/nginx.conf
+
+EXPOSE 8090
+
+CMD ["nginx", "-g", "daemon off;"]
+
+#################################
+cat nginx.conf 
+
+events {}
+
+http {
+    upstream myapp {
+        server 172.20.0.100:9000;
+        server 172.20.0.101:9000;
+    }
+
+    server {
+        listen 8090;
+        server_name localhost;
+
+        location / {
+            proxy_pass http://myapp;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+    }
+}
+
+
+
+(.vdocker) sushil@sushil:~/DOCKER/app$ docker run --net appnet --ip 172.20.0.10 -p 8090:8090 -itd lb
+f7462436ef8d686605491935f682dbfd885eb05ed48a38519e0eaed872527e77
+
+(.vdocker) sushil@sushil:~/DOCKER/app$ docker ps
+CONTAINER ID   IMAGE     COMMAND                  CREATED              STATUS              PORTS                                               NAMES
+42589028bbde   app       "python3 main.py"        30 seconds ago       Up 29 seconds       0.0.0.0:9000->9000/tcp, :::9000->9000/tcp           trusting_zhukovsky
+f7462436ef8d   lb        "/docker-entrypoint.…"   About a minute ago   Up About a minute   80/tcp, 0.0.0.0:8090->8090/tcp, :::8090->8090/tcp   blissful_sutherland
+(.vdocker) sushil@sushil:~/DOCKER/app$ docker kill 425
+425
+(.vdocker) sushil@sushil:~/DOCKER/app$ docker run --net appnet --ip 172.20.0.101  -itd app
+5232f6c9904ce273213a4f0ab2e9e84a238f6a514662b3364e3d7c7c33a6fa5f
+(.vdocker) sushil@sushil:~/DOCKER/app$ docker run --net appnet --ip 172.20.0.100  -itd app
+179ec689535b2f958ce3458d2f7d791a98a73937fcb2d21cab9fc64ffaa9848a
+(.vdocker) sushil@sushil:~/DOCKER/app$ docker run --env MYSQL_ALLOW_EMPTY_PASSWORD=yes --net appnet --ip 172.20.0.200 -v ~/DOCKER/db:/var/lib/mysql -itd mysql:5.7
+547f43f5b4d299c0eac15e544482148b50c20b84a65e9086938e3ebc1757fd6e
+(.vdocker) sushil@sushil:~/DOCKER/app$ docker ps
+CONTAINER ID   IMAGE       COMMAND                  CREATED              STATUS              PORTS                                               NAMES
+547f43f5b4d2   mysql:5.7   "docker-entrypoint.s…"   7 seconds ago        Up 6 seconds        3306/tcp, 33060/tcp                                 kind_elbakyan
+179ec689535b   app         "python3 main.py"        About a minute ago   Up About a minute   9000/tcp                                            suspicious_chebyshev
+5232f6c9904c   app         "python3 main.py"        2 minutes ago        Up 2 minutes        9000/tcp                                            condescending_lichterman
+f7462436ef8d   lb          "/docker-entrypoint.…"   3 minutes ago        Up 3 minutes        80/tcp, 0.0.0.0:8090->8090/tcp, :::8090->8090/tcp   blissful_sutherland
+
+
+
+for the above code, why my load balancer is not changing the server ip address of the app?
+##################
+
+(.vdocker) sushil@sushil:~/DOCKER/lb$ docker exec -it f746 cat /etc/nginx/nginx.conf
+events {}
+
+http {
+    upstream myapp {
+        server 172.20.0.100:9000;
+    }
+
+    server {
+        listen 8090;
+        server_name localhost;
+
+        location / {
+            proxy_pass http://myapp;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+    }
+}
+
+(.vdocker) sushil@sushil:~/DOCKER/lb$ docker cp nginx.conf f746:/etc/nginx/nginx.conf
+Successfully copied 2.56kB to f746:/etc/nginx/nginx.conf
+(.vdocker) sushil@sushil:~/DOCKER/lb$ docker exec -it f746 nginx -s reload
+2024/12/21 16:30:36 [notice] 77#77: signal process started
+(.vdocker) sushil@sushil:~/DOCKER/lb$ docker exec -it f746 nginx -t
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+(.vdocker) sushil@sushil:~/DOCKER/lb$ docker exec -it f746 cat /etc/nginx/nginx.conf
+events {}
+
+http {
+    upstream myapp {
+        least_conn;  # Use least-connections load balancing
+        server 172.20.0.100:9000;
+        server 172.20.0.101:9000;
+        keepalive 32;  # Disable connection reuse
+    }
+
+    server {
+        listen 8090;
+        server_name localhost;
+
+        access_log /var/log/nginx/access.log;
+        error_log /var/log/nginx/error.log debug;
+
+        location / {
+            proxy_pass http://myapp;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+    }
+}
+
+
+#########################Check the load balancer performance
+(.vdocker) sushil@sushil:~/DOCKER/lb$ curl --no-keepalive http://localhost:8090/
+
