@@ -1,0 +1,55 @@
+version: "3.9"
+services:
+  app1:
+    build:
+      context: ./app
+    networks:
+      appnet:
+        ipv4_address: 172.20.0.100
+    environment:
+      - FLASK_ENV=development
+    ports:
+      - "9000:9000"
+    restart: unless-stopped
+
+  app2:
+    build:
+      context: ./app
+    networks:
+      appnet:
+        ipv4_address: 172.20.0.101
+    environment:
+      - FLASK_ENV=development
+    restart: unless-stopped
+
+  db:
+    image: mysql:5.7
+    networks:
+      appnet:
+        ipv4_address: 172.20.0.200
+    environment:
+      - MYSQL_ROOT_PASSWORD=
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+    volumes:
+      - ./db:/var/lib/mysql
+    restart: unless-stopped
+
+  lb:
+    build:
+      context: ./lb
+    networks:
+      appnet:
+        ipv4_address: 172.20.0.10
+    ports:
+      - "8090:8090"
+    depends_on:
+      - app1
+      - app2
+    restart: unless-stopped
+
+networks:
+  appnet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
