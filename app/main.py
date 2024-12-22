@@ -17,12 +17,13 @@ def home():
     out = (
         f"Welcome to Cisco Devnet.<br>"
         f"IP address of the server is {ip}.<br><br>"
-        f"Welcome to the JamesBond world!<br>"
+        f"Welcome to the JamesBond world!<br><br>"
         f"Here is a list of the routers in the inventory:<br>"
     )
-    out += "List of routers in the inventory:<br>"
+    out += "This is start of routers in the inventory:<br><br>"
     for r in get_routers():
         out += f"-> Hostname: {r[0]}, IP: {r[1]}<br>"
+    out += "This is the end of the routers inventory"
     return out
 
 if __name__ == '__main__':
