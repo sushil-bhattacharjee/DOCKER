@@ -1,3 +1,21 @@
+DOCKER/
+├── app/
+│   ├── Dockerfile
+│   ├── main.py
+│   ├── requirements.txt
+├── lb/
+│   ├── Dockerfile
+│   ├── nginx.conf
+├── db/  # (Optional: to persist MySQL data)
+├── docker-compose.yml
+
+
+#These docker can build using docker-build for all the four steps or using docker-compose using yaml file.
+
+
+
+
+
 (.vdocker) sushil@sushil:~/DOCKER/app$ ls -la
 total 20
 drwxrwxr-x 2 sushil sushil 4096 Dec 22 00:04 .
