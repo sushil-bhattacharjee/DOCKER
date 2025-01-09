@@ -11,7 +11,7 @@ DOCKER_APP1_ID=$(docker run --net appnet --ip 172.20.0.100 -itd 10.1.10.98:5005/
 DOCKER_APP2_ID=$(docker run --net appnet --ip 172.20.0.101 -itd 10.1.10.98:5005/root/app2lb2/app2)
 sleep 5
 
-python tests2/system_tests2.py
+python3 tests2/system_tests2.py
 EXIT_CODE=$?
 
 docker stop $DOCKER_LB_ID

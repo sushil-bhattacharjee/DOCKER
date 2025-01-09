@@ -31,4 +31,6 @@ build_lb:
 
 system_test:
   stage: systemtest
-  script: /bin/bash tests2/run_system_tests2.sh
+  script: 
+    - python3 --version || echo "Python3 is not installed"
+    - /bin/bash tests2/run_system_tests2.sh
