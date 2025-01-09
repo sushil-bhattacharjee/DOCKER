@@ -30,7 +30,7 @@ class AppTest(unittest.TestCase):
         
     def test_lb(self):
         response1 = requests.get(self.url)
-        response1 = requests.get(self.url)
+        response2 = requests.get(self.url)
         
         content1 = response1.content.decode('ascii')
         content2 = response2.content.decode('ascii')
