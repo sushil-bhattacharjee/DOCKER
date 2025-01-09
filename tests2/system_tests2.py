@@ -1,7 +1,7 @@
 import unittest
 import requests
 
-class AppTest(unittest.TestCase);
+class AppTest(unittest.TestCase):
     def setUp(self):
         self.url = 'http://10.1.10.98:9280'
         
