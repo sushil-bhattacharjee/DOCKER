@@ -1,6 +1,8 @@
 stages:
   - build 
   - unittest
+  - systembuild
+
 
 build:
   stage: build 
@@ -9,3 +11,19 @@ build:
 unittest_application_code:
   stage: unittest
   script: cd $CI_PROJECT_DIR/app2/tests && /bin/bash run_tests.sh
+
+build_app:
+  stage: systembuild
+  script:
+    - cd $CI_PROJECT_DIR/app2
+    - docker login http://10.1.10.98:8098 -u root -p 97249_NEC 
+    - docker build -t 10.1.10.98:8098/root/app2lb2/app2 .
+    - docker push 10.1.10.98:8098/root/app2lb2/app2
+
+build_lb:
+  stage: systembuild
+  script: 
+    - cd $CI_PROJECT_DIR/LB2
+    - docker login http://10.1.10.98:8098 -u root -p 97249_NEC 
+    - docker build -t 10.1.10.98:8098/root/app2lb2/lb2 .
+    - docker push 10.1.10.98:8098/root/app2lb2/lb2
