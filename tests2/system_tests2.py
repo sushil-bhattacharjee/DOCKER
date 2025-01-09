@@ -35,9 +35,6 @@ class AppTest(unittest.TestCase):
         content1 = response1.content.decode('ascii')
         content2 = response2.content.decode('ascii')
         
-        status_code = response.status_code
-        content = response.content.decode('ascii')
-        
         ip_regex = r"IP Address of the server is ([0-9]{1,3}\.){3}[0-9]{1,3}."
         
         ip_search1 = re.search(ip_regex, content1)
