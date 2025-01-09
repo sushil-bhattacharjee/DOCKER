@@ -47,5 +47,5 @@ class AppTest(unittest.TestCase):
         self.assertNotEqual(ip_search1.group(), ip_search2.group())
     
         
-if __name__ == '__main__'
+if __name__ == '__main__':
     unittest.main()
