@@ -1,6 +1,11 @@
 stages:
   - build 
+  - unittest
 
 build:
   stage: build 
   script: cd $CI_PROJECT_DIR/app2 && docker build -t app2 .
+
+unittest_application_code:
+  stage: unittest
+  script: cd $CI_PROJECT_DIR/app/tests && /bin/bash run_tests.sh

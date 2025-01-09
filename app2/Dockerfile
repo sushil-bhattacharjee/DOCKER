@@ -6,8 +6,8 @@ COPY . /app
 WORKDIR /app
 # Install required Python packages
 RUN pip install -r requirements.txt
-# Expose the port 5000
-EXPOSE 5000
+# Expose the port 9500
+EXPOSE 9500
 CMD ["python", "main.py"]
 
 
