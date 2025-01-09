@@ -1,2 +1,6 @@
-job1:
-  script: echo "Running test CI/CD"
+stages:
+  - build 
+
+build:
+  stage: build 
+  script: cd $CI_PROJECT_DIR/app2 && docker build -t app2 .
