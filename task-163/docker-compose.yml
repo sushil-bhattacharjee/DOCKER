@@ -1,0 +1,34 @@
+services:
+  pod10web:
+    image: wordpress:6.0
+    environment:
+      - WORDPRESS_DB_HOST=pod10db
+      - WORDPRESS_DB_USER=root
+      - WORDPRESS_DB_PASSWORD=task163
+    ports:
+      - 1080:80
+    networks:
+      - pod10frontend
+      - pod10backend 
+  pod10db:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: task163
+      MYSQL_DATABASE: wordpress
+    networks:
+      - pod10backend
+    volumes:
+      - pod10db-data:/var/lib/mysql:rw
+  pod10test:
+    image: wbitt/network-multitool
+    networks:
+      - pod10frontend
+    volumes:
+      - ./test.txt:/var/test.txt:ro
+
+networks:
+  pod10frontend:
+  pod10backend:
+
+volumes:
+  pod10db-data:
