@@ -3,7 +3,7 @@
 
 from flask import Flask 
 from flask_restx import Resource, Api, reqparse 
-import random 
+import random, os
 
 app = Flask(__name__)
 api = Api(app)
@@ -11,8 +11,8 @@ api = Api(app)
 @api.route("/devnet")
 class Devnet(Resource):
     def get(self):
-        if random.randint(1, 3) == 1:  # nosec
-            return "Something seems to be broken!", 500
+        if random.randint(1, 5) == 1:  # nosec
+            os._exit(1)  # Simulate a crash
         else:
             return "Hello, DevNet! All Good!", 200
 

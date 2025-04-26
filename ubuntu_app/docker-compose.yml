@@ -24,6 +24,7 @@ services:
       timeout: 2s
       retries: 1
       start_period: 5s
+    restart: on-failure:3
 networks:
   net1:
   net2:
