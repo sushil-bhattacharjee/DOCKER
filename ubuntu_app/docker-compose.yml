@@ -1,0 +1,32 @@
+services:
+  tools1:
+    image: wbitt/network-multitool
+    environment:
+      - DEVNET=expert
+    networks:
+      - net1
+  tools2:
+    image: wbitt/network-multitool
+    volumes:
+      - ./devnet.txt:/var/devnet.txt:ro
+      - data1:/var/test
+    networks: 
+      - net2
+
+  flask-demo:
+    build: .
+    ports:
+      - 5000:5000
+      - 6000:6000
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:5000/devnet"]
+      interval: 1s
+      timeout: 2s
+      retries: 1
+      start_period: 5s
+networks:
+  net1:
+  net2:
+
+volumes:
+  data1:
